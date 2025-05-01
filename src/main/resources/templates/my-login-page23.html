@@ -1,0 +1,91 @@
+
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Регистрация</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .registration-form {
+            display: none;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+<div class="container mt-5">
+    <h1 class="text-center">Авторизация</h1>
+    <div class="text-center">
+        <button class="btn btn-primary" onclick="showForm('director')">Прораб</button>
+        <button class="btn btn-success" onclick="showForm('manager')">Менеджер</button>
+        <button class="btn btn-warning" onclick="showForm('employee')">Директор</button>
+    </div>
+    <form id="loginForm" class="hidden" action="#" th:action="@{authenticateUser}" method="post">
+        <div th:if="${param.error}" class="message error">
+            <span>Пожалуйста, введите корректный логин или пароль!</span>
+        </div>
+
+    <!-- Форма регистрации директора -->
+    <div id="director-form" class="registration-form">
+        <h2>Авторизация прораба</h2>
+        <form>
+            <div class="mb-3">
+                <label for="director-login" class="form-label">Логин</label>
+                <input type="text" class="form-control" name="username" placeholder="User name" id="director-login"required>
+            </div>
+            <div class="mb-3">
+                <label for="director-password" class="form-label">Пароль</label>
+                <input type="password" class="form-control" name="password" placeholder="Password" id="director-password"required>
+            </div>
+            <button type="submit" class="btn btn-primary">Войти</button>
+        </form>
+    </div>
+
+    <!-- Форма регистрации менеджера -->
+    <div id="manager-form" class="registration-form">
+        <h2>Авторизация менеджера</h2>
+        <form>
+            <div class="mb-3">
+                <label for="manager-login" class="form-label">Логин</label>
+                <input type="text" class="form-control" name="username" placeholder="User name" id="manager-login"required>
+            </div>
+            <div class="mb-3">
+                <label for="manager-password" class="form-label">Пароль</label>
+                <input type="password" class="form-control" name="password" placeholder="Password" id="manager-password"required>
+            </div>
+            <button type="submit" class="btn btn-success">Войти</button>
+        </form>
+    </div>
+
+    <!-- Форма регистрации работника -->
+    <div id="employee-form" class="registration-form">
+        <h2>Авторизация директора</h2>
+        <form>
+            <div class="mb-3">
+                <label for="employee-login" class="form-label">Логин</label>
+                <input type="text" class="form-control" name="username" placeholder="User name" id="employee-login"required>
+            </div>
+            <div class="mb-3">
+                <label for="employee-password" class="form-label">Пароль</label>
+                <input type="password" class="form-control" name="password" placeholder="Password" id="employee-password"required>
+            </div>
+            <button type="submit" class="btn btn-warning">Войти</button>
+        </form>
+    </div>
+        </form>
+</div>
+
+<script>
+        function showForm(formType) {
+            // Скрываем все формы
+            document.querySelectorAll('.registration-form').forEach(form => {
+                form.style.display = 'none';
+            });
+
+            // Показываем нужную форму
+            document.getElementById(`${formType}-form`).style.display = 'block';
+        }
+    </script>
+</body>
+</html>

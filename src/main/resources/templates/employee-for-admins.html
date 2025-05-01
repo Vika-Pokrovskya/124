@@ -1,0 +1,327 @@
+
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Страница директора</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <style>
+  /* Стиль для футера */
+        footer {
+            background-color: #f8f9fa;
+            padding: 20px 0;
+            border-top: 1px solid #e9ecef;
+            text-align: center;
+        }
+        .footer-content {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Flexbox для прижатия футера к низу */
+        html, body {
+            height: 100%;
+        }
+        body {
+            display: flex;
+            flex-direction: column;
+        }
+        .content {
+            flex: 1;
+        }
+        .exit-button {
+  position: absolute;
+  top: 105px;
+  left: 110px;
+  z-index: 1000;
+}
+    </style>
+</head>
+<body class="bg-light">
+
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="#">Директор</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav me-auto">
+        <li class="nav-item"sec:authorize="hasRole('USER')">
+          <a class="nav-link "  th:href="@{/}">Работник</a>
+        </li>
+        <li class="nav-item" sec:authorize="hasRole('MANAGER')">
+          <a class="nav-link" th:href="@{/managers}">Менеджер</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link active" aria-current="page" href="#">Директор</a>
+        </li>
+      </ul>
+      <form class="d-flex" action="#" th:action="@{/logout}" method="post">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+        <button type="submit" class="btn btn-danger">Выйти</button>
+      </form>
+    </div>
+  </div>
+</nav>
+
+
+<div class="container mt-5 flex-grow-1">
+  <a th:href="@{/admins}" class="btn btn-outline-secondary exit-button">
+    <i class="fas fa-arrow-left"></i> Назад
+  </a>
+<div class="card shadow">
+  <!-- Кнопка "Выход" в левом верхнем углу -->
+
+  <div class="card-header bg-primary text-white">
+    <h2 class="card-title">Информация о Работнике</h2>
+  </div>
+  <div class="card-body">
+    <p class="card-text">
+      <strong>Username:</strong> <span th:text="${username}"></span><br>
+      <strong>Full Name:</strong> <span th:text="${fullName}"></span><br>
+      <strong>Phone Number:</strong> <span th:text="${phoneNumber}"></span><br>
+    </p>
+  </div>
+</div>
+
+
+  <div class="mt-5">
+    <ul class="nav nav-tabs" id="myTab" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="view-tasks-tab" data-bs-toggle="tab" data-bs-target="#view-tasks" type="button" role="tab" aria-controls="view-tasks" aria-selected="true">Просмотр задач</button>
+      </li>
+
+    </ul>
+    <div class="tab-content" id="myTabContent">
+      <div class="tab-pane fade show active" id="view-tasks" role="tabpanel" aria-labelledby="view-tasks-tab">
+        <div class="card shadow mt-3">
+          <div class="card-header bg-primary text-white">
+            <h2 class="card-title">Задачи работника: <span th:text="${username}"></span></h2>
+          </div>
+          <div class="card-body">
+            <!-- Форма для выбора месяца -->
+            <form  method="get" class="mb-4">
+              <div class="mb-3">
+                <label for="monthId" class="form-label">Выберите месяц</label>
+                <select class="form-select" id="monthId" name="monthId" required>
+                  <option th:each="month : ${months}"
+                          th:value="${month.id}"
+                          th:text="${month.name}"
+                          th:selected="${month.id == selectedMonthId}">
+                  </option>
+                </select>
+              </div>
+              <button type="submit" class="btn btn-primary">Показать задачи</button>
+            </form>
+
+            <!-- Таблица с задачами -->
+            <table class="table table-bordered">
+              <thead>
+              <tr>
+                <th>Месяц</th>
+                <th>Задание</th>
+                <th>Цена</th>
+                <th>Оплачено</th>
+                <th>Остаток</th> <!-- Новый столбец только для отображения -->
+                <th>Статус оплаты</th>
+                <th>Изменение статуса</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr th:each="task : ${tasks}">
+                <td th:text="${task.monthName}"></td>
+                <td th:text="${task.task}"></td>
+                <td>
+                  <span th:text="${task.price}"></span>
+                  <button type="button" class="btn btn-sm btn-outline-primary ms-2"
+                          data-bs-toggle="modal"
+                          data-bs-target="#editPriceModal"
+                          th:data-task-id="${task.id}"
+                          th:data-task-price="${task.price}">
+                    Изменить
+                  </button>
+                </td>
+                <td th:text="${task.partialAmount}"></td>
+                <td th:text="${task.price - task.partialAmount}"></td> <!-- Рассчитываем на лету -->
+                <td th:text="${task.paymentStatus}"></td>
+                <td>
+                <button type="button" class="btn btn-warning btn-sm"
+                        data-bs-toggle="modal"
+                        data-bs-target="#editPaymentStatusModal"
+                        th:data-task-id="${task.id}"
+                        th:data-payment-status="${task.paymentStatus}"
+                        th:data-task-price="${task.price}">
+                  Изменить
+                </button>
+                </td>
+              </tr>
+              </tbody>
+            </table>
+
+
+            <!-- Итоговые суммы -->
+            <div class="mt-3">
+              <h4>Сумма выполненных работ: <span th:text="${totalAmount}"></span></h4>
+              <h4>Оплачено: <span th:text="${paidAmount}"></span></h4>
+              <h4>Долг: <span th:text="${unpaidAmount}"></span></h4>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+
+
+
+
+
+</div>
+
+
+
+
+<!-- Добавьте этот код перед закрывающим тегом </body> -->
+<!-- Модальное окно для изменения статуса оплаты -->
+<div class="modal fade" id="editPaymentStatusModal" tabindex="-1" aria-labelledby="editPaymentStatusModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editPaymentStatusModalLabel">Изменить статус оплаты</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form th:action="@{/admins/{username}/updateStatus(username=${username})}" method="post">
+
+        <div class="modal-body">
+          <input type="hidden" name="id" id="taskId">
+          <input type="hidden" name="monthId" th:value="${selectedMonthId}">
+          <div class="mb-3">
+            <label for="paymentStatus" class="form-label">Статус оплаты</label>
+            <select class="form-select" id="paymentStatus" name="paymentStatus" required>
+              <option value="Оплачено">Оплачено</option>
+              <option value="Не оплачено">Не оплачено</option>
+              <option value="Частично оплачено">Частично оплачено</option>
+            </select>
+          </div>
+          <div class="mb-3" id="partialAmountField" style="display: none;">
+            <label for="partialAmount" class="form-label">Сумма частичной оплаты</label>
+            <input type="number" step="0.01" class="form-control" id="partialAmount" name="partialAmount">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+          <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="editPriceModal" tabindex="-1" aria-labelledby="editPriceModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editPriceModalLabel">Изменить цену</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form th:action="@{/admins/{username}/updatePrice(username=${username})}" method="post">
+        <div class="modal-body">
+          <input type="hidden" name="id" id="priceTaskId">
+          <input type="hidden" name="monthId" th:value="${selectedMonthId}">
+          <div class="mb-3">
+            <label for="newPrice" class="form-label">Новая цена</label>
+            <input type="number" step="0.01" class="form-control" id="newPrice" name="price" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+          <button type="submit" class="btn btn-primary">Сохранить</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<script>
+document.getElementById('paymentStatus').addEventListener('change', function() {
+  const partialAmountField = document.getElementById('partialAmountField');
+  const partialAmountInput = document.getElementById('partialAmount');
+  const taskPrice = parseFloat(document.getElementById('partialAmount').getAttribute('data-task-price')) || 0;
+
+  if (this.value === 'Частично оплачено') {
+    partialAmountField.style.display = 'block';
+  } else if (this.value === 'Оплачено') {
+    partialAmountField.style.display = 'none';
+    partialAmountInput.value = taskPrice.toFixed(2); // Устанавливаем полную сумму
+  } else { // Не оплачено
+    partialAmountField.style.display = 'none';
+    partialAmountInput.value = '0.00';
+  }
+});
+document.getElementById('editPaymentStatusModal').addEventListener('show.bs.modal', function(event) {
+  const button = event.relatedTarget;
+  const taskId = button.getAttribute('data-task-id');
+  const currentStatus = button.getAttribute('data-payment-status');
+  const taskPrice = parseFloat(button.getAttribute('data-task-price'));
+
+  document.getElementById('taskId').value = taskId;
+  document.getElementById('paymentStatus').value = currentStatus;
+
+  // Устанавливаем атрибут с ценой задачи для поля partialAmount
+  const partialAmountInput = document.getElementById('partialAmount');
+  partialAmountInput.setAttribute('data-task-price', taskPrice);
+
+  if (currentStatus === 'Оплачено') {
+    partialAmountInput.value = taskPrice.toFixed(2);
+  } else if (currentStatus === 'Не оплачено') {
+    partialAmountInput.value = '0.00';
+  }
+  // Для "Частично оплачено" значение остаётся как есть
+});
+
+// Логика обновления при изменении суммы (если нужно)
+document.getElementById('partialAmount')?.addEventListener('input', function() {
+  const taskPrice = parseFloat(this.getAttribute('data-task-price'));
+  const partialPaid = parseFloat(this.value) || 0;
+  const remaining = taskPrice - partialPaid;
+
+  // Если у вас есть элемент для отображения остатка, раскомментируйте:
+  document.getElementById('remainingAmountDisplay').textContent = remaining.toFixed(2);
+
+  const statusSelect = document.getElementById('paymentStatus');
+  if (partialPaid === 0) {
+    statusSelect.value = 'Не оплачено';
+  } else if (partialPaid >= taskPrice) {
+    statusSelect.value = 'Оплачено';
+  } else {
+    statusSelect.value = 'Частично оплачено';
+  }
+});
+
+document.getElementById('editPriceModal').addEventListener('show.bs.modal', function(event) {
+  const button = event.relatedTarget;
+  const taskId = button.getAttribute('data-task-id');
+  const taskPrice = button.getAttribute('data-task-price');
+
+  document.getElementById('priceTaskId').value = taskId;
+  document.getElementById('newPrice').value = taskPrice;
+});
+
+</script>
+</body>
+<!-- Футер -->
+<footer class="mt-auto">
+  <div class="footer-content">
+    <p>&copy; 2025 Бочаров. Все права защищены.</p>
+
+  </div>
+</footer>
+
+
+</html>
